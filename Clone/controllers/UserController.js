@@ -6,6 +6,18 @@ class UserController {
         this.tableEl = document.getElementById(tableId);  // Obtém a tabela onde os usuários serão listados
 
         this.onSubmit();  // Chama o método onSubmit para adicionar o evento de envio do formulário
+        this.onEdit();
+    
+    }
+
+    onEdit(){
+
+        document.querySelector("#box-user-update .btn-cancel").addEventListener("click", e=> {
+
+            this.showPanelCreate();
+
+        });
+        
     }
 
     // Método para configurar o evento de envio do formulário
@@ -90,12 +102,13 @@ class UserController {
 
             // Trata campos de gênero (checkbox ou radio)
             if (field.name == "gender") {
+
                 if (field.checked) {
                     user[field.name] = field.value;  // Atribui o valor do gênero ao objeto user
                 }
 
             // Para o campo admin, verifica se está marcado (checkbox)
-            } else if (field.name === "admin"){
+            } else if (field.name == "admin") {
                 user[field.name] = field.checked;  // Atribui o valor do checkbox ao objeto user
 
             } else {
@@ -113,7 +126,8 @@ class UserController {
         return new User(
             user.name, 
             user.gender, 
-            user.birth, 
+            user.birth,
+            user.country, 
             user.email, 
             user.password, 
             user.photo, 
@@ -124,6 +138,7 @@ class UserController {
     // Método para adicionar uma linha na tabela com os dados do usuário
     addLine(dataUser){
         let tr = document.createElement('tr');  // Cria uma nova linha na tabela
+
         tr.dataset.user = JSON.stringify(dataUser);
 
         tr.innerHTML = `
@@ -133,15 +148,42 @@ class UserController {
             <td>${(dataUser.admin) ? 'Sim' : 'Não'}</td>
             <td>${Utils.dateFormat(dataUser.register)}</td>
             <td>
-            <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
+            <button type="button" class="btn btn-primary btn-edit btn-xs btn-flat">Editar</button>
             <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
             </td>
         `;  // Preenche a linha com os dados do usuário, incluindo a foto
+
+        tr.querySelector(".btn-edit").addEventListener("click", e=> {
+
+            console.log(JSON.parse(tr.dataset.user));
+            document.querySelector("#box-user-create").style.display = "none";
+            document.querySelector("#box-user-update").style.display = "block";
+
+
+
+        });
 
         this.tableEl.appendChild(tr);  // Adiciona a nova linha à tabela
 
         this.updateCount()
     }
+
+    showPanelCreate(){
+
+            document.querySelector("#box-user-create").style.display = "block";
+            document.querySelector("#box-user-update").style.display = "none";
+
+        }
+
+    showPanelUpdate(){
+
+            document.querySelector("#box-user-create").style.display = "none";
+            document.querySelector("#box-user-update").style.display = "block";
+
+        }
+
+            
+           
         
         updateCount() {
         
@@ -154,7 +196,7 @@ class UserController {
 
                 let user = JSON.parse(tr.dataset.user)
 
-                if (user.admin) numberAdmin++;
+                if (user.admin === true) numberAdmin++;
 
             });
 
