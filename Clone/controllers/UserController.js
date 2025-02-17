@@ -6,18 +6,16 @@ class UserController {
         this.tableEl = document.getElementById(tableId);  // Obtém a tabela onde os usuários serão listados
 
         this.onSubmit();  // Chama o método onSubmit para adicionar o evento de envio do formulário
-        this.onEdit();
-    
+        this.onEdit();    // Chama o método onEdit para configurar o evento de edição de usuários
     }
 
     onEdit(){
-
+        // Adiciona o evento de clique no botão "Cancelar" da atualização
         document.querySelector("#box-user-update .btn-cancel").addEventListener("click", e=> {
 
-            this.showPanelCreate();
+            this.showPanelCreate();  // Mostra o painel de criação de usuário
 
         });
-        
     }
 
     // Método para configurar o evento de envio do formulário
@@ -26,13 +24,12 @@ class UserController {
 
             event.preventDefault();  // Previne o comportamento padrão de envio do formulário
 
-            let btn = this.formEl.querySelector("[type=submit]");
-
-            btn.disabled = true;
+            let btn = this.formEl.querySelector("[type=submit]");  // Obtém o botão de envio do formulário
+            btn.disabled = true;  // Desabilita o botão para prevenir múltiplos envios
 
             let values = this.getValues();  // Obtém os valores preenchidos no formulário
 
-            if (!values) return false;
+            if (!values) return false;  // Se os valores não são válidos, retorna falso e não prossegue
 
             // Chama a função para obter a foto e aguarda a resposta
             this.getPhoto().then(
@@ -41,10 +38,8 @@ class UserController {
 
                     this.addLine(values);  // Adiciona uma linha na tabela com os dados do usuário
 
-                    this.formEl.reset();
-                    
-                    btn.disabled = false;
-
+                    this.formEl.reset();  // Limpa o formulário após a submissão
+                    btn.disabled = false;  // Reabilita o botão de envio após a operação
                 },
                 (e) => {
                     console.error(e);  // Caso ocorra erro na obtenção da foto
@@ -88,21 +83,19 @@ class UserController {
     // Método para coletar os valores do formulário
     getValues(){
         let user = {};  // Objeto para armazenar os dados do usuário
-        let isValid = true;
+        let isValid = true;  // Flag para verificar se todos os campos obrigatórios foram preenchidos
 
         // Itera sobre todos os elementos do formulário
         [...this.formEl.elements].forEach(function(field, index){
 
+            // Verifica se os campos obrigatórios 'name', 'email' e 'password' foram preenchidos
             if (['name', 'email', 'password'].indexOf(field.name) > -1  && !field.value ) {
-
-                field.parentElement.classList.add('has-error');
-                isValid = false;
-
+                field.parentElement.classList.add('has-error');  // Adiciona uma classe de erro ao campo
+                isValid = false;  // Marca como inválido
             }
 
-            // Trata campos de gênero (checkbox ou radio)
+            // Trata campos de gênero (radio button)
             if (field.name == "gender") {
-
                 if (field.checked) {
                     user[field.name] = field.value;  // Atribui o valor do gênero ao objeto user
                 }
@@ -117,9 +110,7 @@ class UserController {
         });
 
         if (!isValid) {
-
-            return false;
-
+            return false;  // Retorna falso se algum campo obrigatório não foi preenchido
         }
 
         // Retorna um novo objeto User com os dados coletados
@@ -139,7 +130,7 @@ class UserController {
     addLine(dataUser){
         let tr = document.createElement('tr');  // Cria uma nova linha na tabela
 
-        tr.dataset.user = JSON.stringify(dataUser);
+        tr.dataset.user = JSON.stringify(dataUser);  // Salva os dados do usuário como um atributo data
 
         tr.innerHTML = `
             <td><img src="${dataUser.photo}" alt="User Image" class="img-circle img-sm"></td>
@@ -153,85 +144,81 @@ class UserController {
             </td>
         `;  // Preenche a linha com os dados do usuário, incluindo a foto
 
+        // Adiciona o evento de clique no botão "Editar"
         tr.querySelector(".btn-edit").addEventListener("click", e=> {
 
-            let json = JSON.parse(tr.dataset.user);
-            let form = document.querySelector("#form-user-update");
+            let json = JSON.parse(tr.dataset.user);  // Recupera os dados do usuário da linha
+            let form = document.querySelector("#form-user-update");  // Obtém o formulário de atualização
             
+            // Itera sobre os dados do usuário e preenche o formulário com os valores
             for (let name in json) {
 
-                let field = form.querySelector("[name=" + name.replace("_", "") + "]")
+                let field = form.querySelector("[name=" + name.replace("_", "") + "]");
 
                 if (field) {
 
                     switch (field.type) {
                         case 'file':
-                        continue;
+                            continue;  // Ignora o campo 'file', pois não é possível preencher automaticamente
                         break;
 
                         case 'radio':
                             field = form.querySelector("[name=" + name.replace("_", "") + "][value=" + json[name] + "]");
-                            field.checked = true;
+                            field.checked = true;  // Marca o radio button correspondente
                         break;
 
                         case 'checkbox':
-                            field.checked = json[name];
+                            field.checked = json[name];  // Marca ou desmarca o checkbox conforme o valor
                         break;
 
                         default:
-                            field.value = json[name];
+                            field.value = json[name];  // Preenche os outros campos com o valor
                     }
-
-                    field.value = json[name];
 
                 }
 
             }
 
-            this.showPanelUpdate();
+            this.showPanelUpdate();  // Mostra o painel de atualização de usuário
 
         });
 
         this.tableEl.appendChild(tr);  // Adiciona a nova linha à tabela
 
-        this.updateCount()
+        this.updateCount();  // Atualiza a contagem de usuários e administradores
     }
 
+    // Exibe o painel de criação de usuário
     showPanelCreate(){
+        document.querySelector("#box-user-create").style.display = "block";  // Mostra o painel de criação
+        document.querySelector("#box-user-update").style.display = "none";  // Oculta o painel de atualização
+    }
 
-            document.querySelector("#box-user-create").style.display = "block";
-            document.querySelector("#box-user-update").style.display = "none";
-
-        }
-
+    // Exibe o painel de atualização de usuário
     showPanelUpdate(){
+        document.querySelector("#box-user-create").style.display = "none";  // Oculta o painel de criação
+        document.querySelector("#box-user-update").style.display = "block";  // Mostra o painel de atualização
+    }
 
-            document.querySelector("#box-user-create").style.display = "none";
-            document.querySelector("#box-user-update").style.display = "block";
+    // Atualiza a contagem de usuários e administradores
+    updateCount() {
+        let numberUsers = 0;  // Contador de usuários
+        let numberAdmin = 0;  // Contador de administradores
 
-        }
+        // Itera sobre todas as linhas da tabela
+        [...this.tableEl.children].forEach(tr=>{
 
-            
-           
-        
-        updateCount() {
-        
-            let numberUsers = 0;
-            let numberAdmin = 0;
+            numberUsers++;  // Incrementa o contador de usuários
 
-            [...this.tableEl.children].forEach(tr=>{
+            let user = JSON.parse(tr.dataset.user);  // Recupera os dados do usuário
 
-                numberUsers++;
+            if (user.admin === true) numberAdmin++;  // Se for administrador, incrementa o contador de administradores
 
-                let user = JSON.parse(tr.dataset.user)
+        });
 
-                if (user.admin === true) numberAdmin++;
-
-            });
-
-            document.querySelector("#number-users").innerHTML = numberUsers;
-            document.querySelector("#number-users-admin").innerHTML = numberAdmin;
-
-        }
+        // Atualiza os elementos na página com os números
+        document.querySelector("#number-users").innerHTML = numberUsers;
+        document.querySelector("#number-users-admin").innerHTML = numberAdmin;
+    }
 
 }
